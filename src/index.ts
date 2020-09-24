@@ -2,7 +2,7 @@ import http from "http"
 import https from "https"
 import urlParser from "url"
 //@ts-ignore
-import { endpoints, port } from "../config"
+import { endpoints, port } from "../config.json"
 
 const parsedEndpoints: http.ClientRequestArgs[] = endpoints.map((endpoint: string) => {
     const urlOptions = urlParser.parse(endpoint)

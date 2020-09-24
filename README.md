@@ -4,11 +4,11 @@ Metrics-tee is a simple node.js http service that accepts http requests and forw
 
 ## Prerequisites
 
-Make sure you have installed all of the following prerequisites on your development machine:
-* [node.js](https://nodejs.org/en/)
+Make sure you have installed the following prerequisites on your machine:
+* [node.js](https://nodejs.org/en/) and npm
 
 ```bash
-sudo apt install nodejs
+sudo apt install nodejs npm -Y
 ```
 * [pm2](https://pm2.io/) process manager for Node.js apps (optional)
 
@@ -23,14 +23,16 @@ git clone https://github.com/coverlet/metrics-tee.git
 cd metrics-tee
 npm i
 ```
-Rename `config.sample.js` to `config.js` and add all the endpoints that you want the metrics forwarded too:
-```js
-export const port = 3311
-export const endpoints = [
-    "https://metrics.solana.com:8086/write?db=netdb&u=user&p=pass&precision=ms",
-    "http://yourendpoint.com:8111/write?db=db&u=user&p=pass&precision=ms,
-    ...
-]
+Rename `config.sample.json` to `config.json` and add all the endpoints that you want the metrics to be forwarded to:
+```json
+{
+    "port": 3311,
+    "endpoints": [
+        "https://metrics.solana.com:8086/write?db=netdb&u=user&p=pass&precision=ms",
+        "http://yourinfluxdcinstance.com:8096/write?db=db&u=user&p=pass&precision=ms",
+        ...
+    ]
+}
 ```
 
 ## Running
