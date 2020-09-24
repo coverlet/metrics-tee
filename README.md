@@ -24,7 +24,7 @@ cd metrics-tee
 npm i
 ```
 Rename `config.sample.json` to `config.json` and add all the endpoints that you want the metrics to be forwarded to:
-```json
+```text
 {
     "port": 3311,
     "endpoints": [
