@@ -19,23 +19,25 @@ http.createServer((req: http.IncomingMessage, res: http.ServerResponse) => {
     const { method, headers } = req
 
     const requests: http.ClientRequest[] = parsedEndpoints.map((options) => {
+        const { agent, hostname, path, port, protocol, auth } = options
+
         return http
             .request({
-                agent: options.agent,
-                host: options.hostname,
-                path: options.path,
-                port: options.port,
-                protocol: options.protocol,
-                auth: options.auth,
+                agent,
+                host: hostname,
+                path,
+                port,
+                protocol,
+                auth,
                 method,
-                headers: { ...headers, host: `${options.hostname}:${options.port}`},
+                headers: { ...headers, host: `${hostname}:${port}`},
             })
             .on("error", (err: any) => {
-                console.error((new Date()).toISOString() + ' ' + options.hostname, err)
+                console.error((new Date()).toISOString() + ' ' + hostname, err)
             })
             .on("response", (r: any) => {
                 console.log((new Date()).toISOString() 
-                    + ` ${options.hostname}: ${r.statusCode} ${r.statusMessage} x-request-id=${r.headers['x-request-id']}`
+                    + ` ${hostname}: ${r.statusCode} ${r.statusMessage} x-request-id=${r.headers['x-request-id']}`
                     + ` x-influxdb-build=${r.headers['x-influxdb-build']} x-influxdb-version=${r.headers['x-influxdb-version']} ${r.headers['x-influxdb-error'] ? "x-influxdb-error=" + r.headers['x-influxdb-error'] : ''}`)
             })
     })
