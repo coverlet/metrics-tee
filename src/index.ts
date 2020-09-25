@@ -1,59 +1,45 @@
 import http from "http"
-import https from "https"
-import urlParser from "url"
+import fetch from "node-fetch"
+
 //@ts-ignore
 import { endpoints, port } from "../config.json"
 
-const parsedEndpoints: http.ClientRequestArgs[] = endpoints.map((endpoint: string) => {
-    const urlOptions = urlParser.parse(endpoint)
-    return {
-        ...urlOptions,
-        agent:
-            urlOptions.protocol === "https:"
-                ? new https.Agent({ keepAlive: true })
-                : new http.Agent({ keepAlive: true }),
-    }
-})
+const server = http
+    .createServer((req: http.IncomingMessage, res: http.ServerResponse) => {
+        const { method } = req
 
-http.createServer((req: http.IncomingMessage, res: http.ServerResponse) => {
-    const { method, headers } = req
+        let data: Uint8Array[] = [];
 
-    const requests: http.ClientRequest[] = parsedEndpoints.map((options) => {
-        const { agent, hostname, path, port, protocol, auth } = options
+        req.on("data", (chunk: any) => {
+            data.push(chunk)
+        }).on("end", () => {        
+            const payload = Buffer.concat(data).toString(); 
+            data = []   
 
-        return http
-            .request({
-                agent,
-                host: hostname,
-                path,
-                port,
-                protocol,
-                auth,
-                method,
-                headers: { ...headers, host: `${hostname}:${port}`},
+            endpoints.forEach((endpoint) => {
+                fetch(endpoint, { method, body: payload })
+                    .then((r: any) => {
+                        console.log(
+                            `${endpoint} ${r.status} ${r.statusText} x-request-id=${r.headers.get(
+                                "x-request-id"
+                            )} x-influxdb-build=${r.headers.get(
+                                "x-influxdb-build"
+                            )} x-influxdb-version=${r.headers.get(
+                                "x-influxdb-version"
+                            )} x-influxdb-error=${r.headers.get("x-influxdb-error")}`
+                        )
+                    })
+                    .catch((error) => {
+                        console.log(error)
+                    })
             })
-            .on("error", (err: any) => {
-                console.error((new Date()).toISOString() + ' ' + hostname, err)
-            })
-            .on("response", (r: any) => {
-                console.log((new Date()).toISOString() 
-                    + ` ${hostname}: ${r.statusCode} ${r.statusMessage} x-request-id=${r.headers['x-request-id']}`
-                    + ` x-influxdb-build=${r.headers['x-influxdb-build']} x-influxdb-version=${r.headers['x-influxdb-version']} ${r.headers['x-influxdb-error'] ? "x-influxdb-error=" + r.headers['x-influxdb-error'] : ''}`)
-            })
-    })
-
-    req.on("data", (chunk: any) => {
-        requests.forEach((request: http.ClientRequest) => {
-            request.write(chunk)
         })
-    }).on("end", () => {
-        requests.forEach((request: any) => {
-            request.end()
-        })
-    })
 
-    res.writeHead(200)
-    res.end()
-}).listen(port)
+        res.writeHead(200)
+        res.end()
+    })
+    .listen(port)
+
+server.setMaxListeners(20)
 
 console.log(`Server running at http://127.0.0.1:${port}/`)

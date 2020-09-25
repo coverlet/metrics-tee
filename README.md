@@ -8,7 +8,7 @@ Make sure you have installed the following prerequisites on your machine:
 * [node.js](https://nodejs.org/en/) and npm
 
 ```bash
-sudo apt install nodejs npm -Y
+sudo apt install -y nodejs npm
 ```
 * [pm2](https://pm2.io/) process manager for Node.js apps (optional)
 
